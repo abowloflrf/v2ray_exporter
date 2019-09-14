@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
-	"github.com/prometheus/client_golang/prometheus"
 	"log"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
 	v2Stats "v2ray.com/core/app/stats/command"
 )
 

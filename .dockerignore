@@ -1,0 +1,8 @@
+.git
+
+.vscode/
+.idea/
+/sample.json
+/config.json
+/v2ray-exporter
+/build

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/spf13/cobra"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -20,7 +21,7 @@ var (
 
 var cmd = &cobra.Command{
 	Use:   "v2ray-exporter",
-	Short: "v2ray-exporter is a exporter to collect traffic usage by each vmess user which can collected by prometheus",
+	Short: "v2ray-exporter is a exporter to collect traffic usage by each vmess user which can be collected by prometheus",
 	Run: func(cmd *cobra.Command, args []string) {
 		signals := make(chan os.Signal, 1)
 		v2c = NewClient(v2rayAddr)
