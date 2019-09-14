@@ -34,7 +34,7 @@ func (c *Client) QueryStats(pt string) ([]*v2Stats.Stat, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Query from v2ray, duration:", time.Now().Sub(start))
+	log.Println("Query from v2ray, duration:", time.Since(start))
 	return resp.Stat, nil
 }
 
