@@ -46,9 +46,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) parseStatsItem(s *v2Stats.Stat) (*SingleF64Stat, error) {
-	//"user>>>i@ruofeng.me>>>traffic>>>downlink"
-	//"inbound>>>api>>>traffic>>>uplink"
-	//"inbound>>>vmess-ws-in>>>traffic>>>downlink"
+	// "user>>>i@ruofeng.me>>>traffic>>>downlink"
+	// "inbound>>>api>>>traffic>>>uplink"
+	// "inbound>>>vmess-ws-in>>>traffic>>>downlink"
 	d := strings.Split(s.Name, ">>>")
 	if len(d) != 4 {
 		return nil, errors.New("invalid stats [length]")
