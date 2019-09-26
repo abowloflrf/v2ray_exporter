@@ -14,6 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag docker.pkg.github.com/abowloflrf/v2ray_exporter:latest
-      run: docker login docker.pkg.github.com -u abowloflrf -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      run: docker push docker.pkg.github.com/abowloflrf/v2ray_exporter:latest
+      run: |
+      docker build . --file Dockerfile --tag docker.pkg.github.com/abowloflrf/v2ray_exporter:latest
+      docker login docker.pkg.github.com -u abowloflrf -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      docker push docker.pkg.github.com/abowloflrf/v2ray_exporter:latest
