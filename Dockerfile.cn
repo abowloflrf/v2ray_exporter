@@ -1,7 +1,11 @@
+# Use this Dockerfile if your network is behind GWF.
 FROM golang:1.13 as builder
 WORKDIR /code
 COPY go.mod go.sum ./
-RUN go mod download
+#
+RUN go env -w GOPROXY=https://goproxy.cn \
+    && go env -w GOSUMDB=sum.golang.google.cn \
+    && go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o v2ray_exporter .
 
