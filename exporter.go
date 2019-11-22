@@ -60,14 +60,14 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		sugar.Warnw("get sys stats from v2ray", "error", err)
 		return
 	} else {
-		ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.CounterValue, float64(stats.NumGoroutine))
+		ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.GaugeValue, float64(stats.NumGoroutine))
 		ch <- prometheus.MustNewConstMetric(e.numGC, prometheus.CounterValue, float64(stats.NumGC))
-		ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.CounterValue, float64(stats.Alloc))
-		ch <- prometheus.MustNewConstMetric(e.totalAlloc, prometheus.CounterValue, float64(stats.TotalAlloc))
-		ch <- prometheus.MustNewConstMetric(e.sys, prometheus.CounterValue, float64(stats.Sys))
-		ch <- prometheus.MustNewConstMetric(e.mallocs, prometheus.CounterValue, float64(stats.Mallocs))
-		ch <- prometheus.MustNewConstMetric(e.frees, prometheus.CounterValue, float64(stats.Frees))
-		ch <- prometheus.MustNewConstMetric(e.liveObjects, prometheus.CounterValue, float64(stats.LiveObjects))
+		ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.GaugeValue, float64(stats.Alloc))
+		ch <- prometheus.MustNewConstMetric(e.totalAlloc, prometheus.GaugeValue, float64(stats.TotalAlloc))
+		ch <- prometheus.MustNewConstMetric(e.sys, prometheus.GaugeValue, float64(stats.Sys))
+		ch <- prometheus.MustNewConstMetric(e.mallocs, prometheus.GaugeValue, float64(stats.Mallocs))
+		ch <- prometheus.MustNewConstMetric(e.frees, prometheus.GaugeValue, float64(stats.Frees))
+		ch <- prometheus.MustNewConstMetric(e.liveObjects, prometheus.GaugeValue, float64(stats.LiveObjects))
 		ch <- prometheus.MustNewConstMetric(e.pauseTotalNs, prometheus.CounterValue, float64(stats.PauseTotalNs))
 		ch <- prometheus.MustNewConstMetric(e.uptime, prometheus.CounterValue, float64(stats.Uptime))
 	}
