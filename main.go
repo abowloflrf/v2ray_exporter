@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -50,13 +49,13 @@ func serveHTTP(listenAddress, metricsEndpoint string) {
 			</body>
 			</html>`))
 	})
-	log.Println("Starting HTTP server on", listenAddress)
-	log.Fatal(http.ListenAndServe(listenAddress, nil))
+	sugar.Info("Starting HTTP server on ", listenAddress)
+	sugar.Fatal(http.ListenAndServe(listenAddress, nil))
 }
 
 func main() {
 	if err := cmd.Execute(); err != nil {
-		log.Println("Failed to start server", err)
+		sugar.Error("Failed to start server", err)
 		os.Exit(1)
 	}
 }

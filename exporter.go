@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,6 +17,17 @@ type Exporter struct {
 	inboundTagTrafficDownlink *prometheus.Desc
 	userTrafficUplink         *prometheus.Desc
 	userTrafficDownlink       *prometheus.Desc
+
+	numGoroutine *prometheus.Desc
+	numGC        *prometheus.Desc
+	alloc        *prometheus.Desc
+	totalAlloc   *prometheus.Desc
+	sys          *prometheus.Desc
+	mallocs      *prometheus.Desc
+	frees        *prometheus.Desc
+	liveObjects  *prometheus.Desc
+	pauseTotalNs *prometheus.Desc
+	uptime       *prometheus.Desc
 }
 
 type SingleF64Stat struct {
@@ -36,12 +46,30 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	stats, err := v2c.QueryStats("")
+	usageStats, err := v2c.QueryStats("")
 	if err != nil {
-		log.Println("Failed to collect stats from v2ray:", err)
+		sugar.Warnw("get usage stats from v2ray", "error", err)
+	} else {
+		if err := e.parseUsageStats(ch, usageStats); err != nil {
+			sugar.Warnw("parse usage stats from v2ray", "error", err)
+		}
 	}
-	if err := e.parseSystemStats(ch, stats); err != nil {
-		log.Println("Could not parse stats from v2ray:", err)
+
+	stats, err := v2c.GetSysStats()
+	if err != nil {
+		sugar.Warnw("get sys stats from v2ray", "error", err)
+		return
+	} else {
+		ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.CounterValue, float64(stats.NumGoroutine))
+		ch <- prometheus.MustNewConstMetric(e.numGC, prometheus.CounterValue, float64(stats.NumGC))
+		ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.CounterValue, float64(stats.Alloc))
+		ch <- prometheus.MustNewConstMetric(e.totalAlloc, prometheus.CounterValue, float64(stats.TotalAlloc))
+		ch <- prometheus.MustNewConstMetric(e.sys, prometheus.CounterValue, float64(stats.Sys))
+		ch <- prometheus.MustNewConstMetric(e.mallocs, prometheus.CounterValue, float64(stats.Mallocs))
+		ch <- prometheus.MustNewConstMetric(e.frees, prometheus.CounterValue, float64(stats.Frees))
+		ch <- prometheus.MustNewConstMetric(e.liveObjects, prometheus.CounterValue, float64(stats.LiveObjects))
+		ch <- prometheus.MustNewConstMetric(e.pauseTotalNs, prometheus.CounterValue, float64(stats.PauseTotalNs))
+		ch <- prometheus.MustNewConstMetric(e.uptime, prometheus.CounterValue, float64(stats.Uptime))
 	}
 }
 
@@ -79,7 +107,7 @@ func (e *Exporter) parseStatsItem(s *v2Stats.Stat) (*SingleF64Stat, error) {
 	return nil, errors.New("invalid stats [type]")
 }
 
-func (e *Exporter) parseSystemStats(ch chan<- prometheus.Metric, stats []*v2Stats.Stat) error {
+func (e *Exporter) parseUsageStats(ch chan<- prometheus.Metric, stats []*v2Stats.Stat) error {
 	itemsMetrics := map[string]*prometheus.Desc{
 		"inbound_tag_traffic_uplink":   e.inboundTagTrafficUplink,
 		"inbound_tag_traffic_downlink": e.inboundTagTrafficDownlink,
@@ -90,12 +118,12 @@ func (e *Exporter) parseSystemStats(ch chan<- prometheus.Metric, stats []*v2Stat
 		for _, t := range stats {
 			single, err := e.parseStatsItem(t)
 			if err != nil {
-				log.Println(err)
+				sugar.Warnw("parse usage stats", "error", err)
 				break
 			}
 			if single.Name == m {
 				ch <- prometheus.MustNewConstMetric(d, single.Type, single.Value, single.Tag)
-				log.Println("Collected!", single)
+				sugar.Infow("Collected!", "data", single)
 			}
 		}
 	}
@@ -124,5 +152,16 @@ func NewExporter() *Exporter {
 			"User downlink.",
 			[]string{"user"}, nil,
 		),
+
+		numGoroutine: prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "num_goroutine"), "", nil, nil),
+		numGC:        prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "num_gc"), "", nil, nil),
+		alloc:        prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "alloc"), "", nil, nil),
+		totalAlloc:   prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "total_alloc"), "", nil, nil),
+		sys:          prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "sys"), "", nil, nil),
+		mallocs:      prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "mallocs"), "", nil, nil),
+		frees:        prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "frees"), "", nil, nil),
+		liveObjects:  prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "live_objects"), "", nil, nil),
+		pauseTotalNs: prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "pause_total_ns"), "", nil, nil),
+		uptime:       prometheus.NewDesc(prometheus.BuildFQName(namespace, "", "uptime"), "", nil, nil),
 	}
 }
