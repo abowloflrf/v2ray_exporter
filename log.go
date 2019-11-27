@@ -8,10 +8,12 @@ import (
 
 var sugar *zap.SugaredLogger
 
-func init() {
+func initLogger() {
 	devLoggerConfig := zap.NewDevelopmentConfig()
 	devLoggerConfig.DisableStacktrace = true
-
+	if !debugMode {
+		devLoggerConfig.Level.SetLevel(zap.InfoLevel)
+	}
 	logger, err := devLoggerConfig.Build()
 	if err != nil {
 		log.Fatal("init logger", err)
