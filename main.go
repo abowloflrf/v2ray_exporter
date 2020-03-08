@@ -29,11 +29,17 @@ var cmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		signals := make(chan os.Signal, 1)
-		v2c = NewClient(v2rayAddr)
+
+		v2c, err := NewClient(v2rayAddr)
+		if err != nil {
+			sugar.Errorw("dial V2Ray gRPC server", "error", err.Error())
+			os.Exit(1)
+		}
+		defer v2c.Close()
+
 		go serveHTTP(listenAddr, metricsEndpoint)
 		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 		<-signals
-		v2c.Close()
 	},
 }
 
@@ -41,7 +47,7 @@ func init() {
 	cmd.PersistentFlags().StringVar(&v2rayAddr, "target", "127.0.0.1:10150", "v2ray grpc api endpoint")
 	cmd.PersistentFlags().StringVar(&listenAddr, "listen", "127.0.0.1:9100", "address exporter to listen")
 	cmd.PersistentFlags().StringVar(&metricsEndpoint, "endpoint", "/metrics", "enpoint for metrics")
-	cmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "open debug mode")
+	cmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "print debug log")
 }
 
 func serveHTTP(listenAddress, metricsEndpoint string) {

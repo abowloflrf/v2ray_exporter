@@ -59,19 +59,19 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	if err != nil {
 		sugar.Warnw("get sys sysStats from v2ray", "error", err)
 		return
-	} else {
-		sugar.Debugw("collected sys stats", "data", sysStats)
-		ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.GaugeValue, float64(sysStats.NumGoroutine))
-		ch <- prometheus.MustNewConstMetric(e.numGC, prometheus.CounterValue, float64(sysStats.NumGC))
-		ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.GaugeValue, float64(sysStats.Alloc))
-		ch <- prometheus.MustNewConstMetric(e.totalAlloc, prometheus.GaugeValue, float64(sysStats.TotalAlloc))
-		ch <- prometheus.MustNewConstMetric(e.sys, prometheus.GaugeValue, float64(sysStats.Sys))
-		ch <- prometheus.MustNewConstMetric(e.mallocs, prometheus.GaugeValue, float64(sysStats.Mallocs))
-		ch <- prometheus.MustNewConstMetric(e.frees, prometheus.GaugeValue, float64(sysStats.Frees))
-		ch <- prometheus.MustNewConstMetric(e.liveObjects, prometheus.GaugeValue, float64(sysStats.LiveObjects))
-		ch <- prometheus.MustNewConstMetric(e.pauseTotalNs, prometheus.CounterValue, float64(sysStats.PauseTotalNs))
-		ch <- prometheus.MustNewConstMetric(e.uptime, prometheus.CounterValue, float64(sysStats.Uptime))
 	}
+	sugar.Debugw("collected sys stats", "data", sysStats)
+	ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.GaugeValue, float64(sysStats.NumGoroutine))
+	ch <- prometheus.MustNewConstMetric(e.numGC, prometheus.CounterValue, float64(sysStats.NumGC))
+	ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.GaugeValue, float64(sysStats.Alloc))
+	ch <- prometheus.MustNewConstMetric(e.totalAlloc, prometheus.GaugeValue, float64(sysStats.TotalAlloc))
+	ch <- prometheus.MustNewConstMetric(e.sys, prometheus.GaugeValue, float64(sysStats.Sys))
+	ch <- prometheus.MustNewConstMetric(e.mallocs, prometheus.GaugeValue, float64(sysStats.Mallocs))
+	ch <- prometheus.MustNewConstMetric(e.frees, prometheus.GaugeValue, float64(sysStats.Frees))
+	ch <- prometheus.MustNewConstMetric(e.liveObjects, prometheus.GaugeValue, float64(sysStats.LiveObjects))
+	ch <- prometheus.MustNewConstMetric(e.pauseTotalNs, prometheus.CounterValue, float64(sysStats.PauseTotalNs))
+	ch <- prometheus.MustNewConstMetric(e.uptime, prometheus.CounterValue, float64(sysStats.Uptime))
+
 }
 
 func (e *Exporter) parseStatsItem(s *v2Stats.Stat) (*SingleF64Stat, error) {
