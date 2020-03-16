@@ -14,14 +14,16 @@ type Client struct {
 }
 
 func NewClient(addr string) (*Client, error) {
-	c := new(Client)
 	var err error
-	c.conn, err = grpc.Dial(addr, grpc.WithInsecure())
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
-	c.client = v2Stats.NewStatsServiceClient(c.conn)
-	return c, nil
+	client := v2Stats.NewStatsServiceClient(conn)
+	return &Client{
+		conn:   conn,
+		client: client,
+	}, nil
 }
 
 func (c *Client) QueryStats(pt string) ([]*v2Stats.Stat, error) {
@@ -54,7 +56,7 @@ func (c *Client) GetSysStats() (*v2Stats.SysStatsResponse, error) {
 	if err != nil {
 		return nil, err
 	}
-	sugar.Infow("GetSysStats from v2ray", "duration", time.Since(start))
+	sugar.Debugw("GetSysStats from v2ray", "duration", time.Since(start))
 	return resp, nil
 }
 

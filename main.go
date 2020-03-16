@@ -29,8 +29,8 @@ var cmd = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		signals := make(chan os.Signal, 1)
-
-		v2c, err := NewClient(v2rayAddr)
+		var err error
+		v2c, err = NewClient(v2rayAddr)
 		if err != nil {
 			sugar.Errorw("dial V2Ray gRPC server", "error", err.Error())
 			os.Exit(1)
