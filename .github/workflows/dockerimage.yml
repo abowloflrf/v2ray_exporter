@@ -7,15 +7,28 @@ on:
 
 jobs:
 
+  lint:
+  
+    name: Lint Code Base
+    
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Lint Code Base
+        uses: github/super-linter@v2.0.0
   build:
  
+    name: Build Docker Image
+    
     runs-on: ubuntu-latest
  
     steps:
-    - uses: actions/checkout@v1
-    - name: Login to GitHub Docker Registry
-      run: docker login docker.pkg.github.com -u abowloflrf -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag docker.pkg.github.com/abowloflrf/v2ray_exporter/app:latest
-    - name: Push image to GitHub Docker Registry
-      run: docker push docker.pkg.github.com/abowloflrf/v2ray_exporter/app:latest
+      - uses: actions/checkout@v2
+      - name: Login to GitHub Docker Registry
+        run: docker login docker.pkg.github.com -u abowloflrf -p ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag docker.pkg.github.com/abowloflrf/v2ray_exporter/app:latest
+      - name: Push image to GitHub Docker Registry
+        run: docker push docker.pkg.github.com/abowloflrf/v2ray_exporter/app:latest
