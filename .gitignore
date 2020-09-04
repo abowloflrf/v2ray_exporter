@@ -18,5 +18,5 @@ vendor/
 .idea/
 /sample.json
 /config.json
-/v2ray-exporter
+/v2ray_exporter
 /build

@@ -5,7 +5,7 @@ COPY go.mod go.sum ./
 #
 RUN go env -w GOPROXY=https://goproxy.cn \
     && go env -w GOSUMDB=sum.golang.google.cn \
-    && go mod download
+    && GOPRIVATE=github.com/v2ray/v2ray-core  go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o v2ray_exporter .
 

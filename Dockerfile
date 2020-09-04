@@ -1,7 +1,7 @@
 FROM golang:1.15 as builder
 WORKDIR /code
 COPY go.mod go.sum ./
-RUN go mod download
+RUN GOPRIVATE=github.com/v2ray/v2ray-core go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o v2ray_exporter .
 
