@@ -4,38 +4,40 @@ import (
 	"context"
 	"time"
 
+	v2stats "github.com/v2fly/v2ray-core/v4/app/stats/command"
 	"google.golang.org/grpc"
-	v2Stats "v2ray.com/core/app/stats/command"
 )
 
 type Client struct {
 	conn   *grpc.ClientConn
-	client v2Stats.StatsServiceClient
+	client v2stats.StatsServiceClient
 }
 
 func NewClient(addr string) (*Client, error) {
 	var err error
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	conn, err := grpc.DialContext(ctx, addr, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}
-	client := v2Stats.NewStatsServiceClient(conn)
+	client := v2stats.NewStatsServiceClient(conn)
 	return &Client{
 		conn:   conn,
 		client: client,
 	}, nil
 }
 
-func (c *Client) QueryStats(pt string) ([]*v2Stats.Stat, error) {
+func (c *Client) QueryStats(pt string) ([]*v2stats.Stat, error) {
 	start := time.Now()
-	resp, err := c.client.QueryStats(context.Background(), &v2Stats.QueryStatsRequest{
+	resp, err := c.client.QueryStats(context.Background(), &v2stats.QueryStatsRequest{
 		Pattern: "",
 		Reset_:  false,
 	})
 	if err != nil {
 		return nil, err
 	}
-	sugar.Debugw("QueryStats from v2ray", "duration", time.Since(start))
+	logger.Debugln("QueryStats from v2ray", "duration", time.Since(start))
 	return resp.Stat, nil
 }
 
@@ -50,21 +52,21 @@ func (c *Client) QueryStats(pt string) ([]*v2Stats.Stat, error) {
 // LiveObjects:21535
 // PauseTotalNs:400819
 // Uptime:1057
-func (c *Client) GetSysStats() (*v2Stats.SysStatsResponse, error) {
+func (c *Client) GetSysStats() (*v2stats.SysStatsResponse, error) {
 	start := time.Now()
-	resp, err := c.client.GetSysStats(context.Background(), &v2Stats.SysStatsRequest{})
+	resp, err := c.client.GetSysStats(context.Background(), &v2stats.SysStatsRequest{})
 	if err != nil {
 		return nil, err
 	}
-	sugar.Debugw("GetSysStats from v2ray", "duration", time.Since(start))
+	logger.Debugln("GetSysStats from v2ray", "duration", time.Since(start))
 	return resp, nil
 }
 
 func (c *Client) Close() {
-	sugar.Warn("v2ray grpc connection closing")
+	logger.Warn("v2ray grpc connection closing")
 	err := c.conn.Close()
 	if err != nil {
-		sugar.Warnw("close v2ray connection", "error", err.Error())
+		logger.Warnln("close v2ray connection", err.Error())
 	}
-	sugar.Warn("v2ray grpc connection closed")
+	logger.Warn("v2ray grpc connection closed")
 }

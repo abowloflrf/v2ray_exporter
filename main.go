@@ -32,8 +32,7 @@ var cmd = &cobra.Command{
 		var err error
 		v2c, err = NewClient(v2rayAddr)
 		if err != nil {
-			sugar.Errorw("dial V2Ray gRPC server", "error", err.Error())
-			os.Exit(1)
+			logger.Fatalf("dial V2Ray gRPC server: %v", err)
 		}
 		defer v2c.Close()
 
@@ -61,13 +60,12 @@ func serveHTTP(listenAddress, metricsEndpoint string) {
 			</body>
 			</html>`))
 	})
-	sugar.Info("Starting HTTP server on ", listenAddress)
-	sugar.Fatal(http.ListenAndServe(listenAddress, nil))
+	logger.Infoln("Starting HTTP server on ", listenAddress)
+	logger.Fatal(http.ListenAndServe(listenAddress, nil))
 }
 
 func main() {
 	if err := cmd.Execute(); err != nil {
-		sugar.Error("Failed to start server", err)
-		os.Exit(1)
+		logger.Fatalln("Failed to start server", err)
 	}
 }

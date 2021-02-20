@@ -1,22 +1,14 @@
 package main
 
 import (
-	"log"
-
-	"go.uber.org/zap"
+	"github.com/sirupsen/logrus"
 )
 
-var sugar *zap.SugaredLogger
+var logger *logrus.Logger
 
 func initLogger() {
-	devLoggerConfig := zap.NewDevelopmentConfig()
-	devLoggerConfig.DisableStacktrace = true
-	if !debugMode {
-		devLoggerConfig.Level.SetLevel(zap.InfoLevel)
+	logger = logrus.New()
+	if debugMode {
+		logger.SetLevel(logrus.DebugLevel)
 	}
-	logger, err := devLoggerConfig.Build()
-	if err != nil {
-		log.Fatal("init logger", err)
-	}
-	sugar = logger.Sugar()
 }

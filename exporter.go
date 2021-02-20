@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
-	v2Stats "v2ray.com/core/app/stats/command"
+	v2stats "github.com/v2fly/v2ray-core/v4/app/stats/command"
 )
 
 const (
@@ -48,19 +48,19 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	usageStats, err := v2c.QueryStats("")
 	if err != nil {
-		sugar.Warnw("get usage stats from v2ray", "error", err)
+		logger.Warnln("get usage stats from v2ray", "error", err)
 	} else {
 		if err := e.parseUsageStats(ch, usageStats); err != nil {
-			sugar.Warnw("parse usage stats from v2ray", "error", err)
+			logger.Warnln("parse usage stats from v2ray", "error", err)
 		}
 	}
 
 	sysStats, err := v2c.GetSysStats()
 	if err != nil {
-		sugar.Warnw("get sys sysStats from v2ray", "error", err)
+		logger.Warnln("get sys sysStats from v2ray", "error", err)
 		return
 	}
-	sugar.Debugw("collected sys stats", "data", sysStats)
+	logger.Debugln("collected sys stats", "data", sysStats)
 	ch <- prometheus.MustNewConstMetric(e.numGoroutine, prometheus.GaugeValue, float64(sysStats.NumGoroutine))
 	ch <- prometheus.MustNewConstMetric(e.numGC, prometheus.CounterValue, float64(sysStats.NumGC))
 	ch <- prometheus.MustNewConstMetric(e.alloc, prometheus.GaugeValue, float64(sysStats.Alloc))
@@ -74,7 +74,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 }
 
-func (e *Exporter) parseStatsItem(s *v2Stats.Stat) (*SingleF64Stat, error) {
+func (e *Exporter) parseStatsItem(s *v2stats.Stat) (*SingleF64Stat, error) {
 	// "user>>>i@ruofeng.me>>>traffic>>>downlink"
 	// "inbound>>>api>>>traffic>>>uplink"
 	// "inbound>>>vmess-ws-in>>>traffic>>>downlink"
@@ -108,7 +108,7 @@ func (e *Exporter) parseStatsItem(s *v2Stats.Stat) (*SingleF64Stat, error) {
 	return nil, errors.New("invalid stats [type]")
 }
 
-func (e *Exporter) parseUsageStats(ch chan<- prometheus.Metric, stats []*v2Stats.Stat) error {
+func (e *Exporter) parseUsageStats(ch chan<- prometheus.Metric, stats []*v2stats.Stat) error {
 	itemsMetrics := map[string]*prometheus.Desc{
 		"inbound_tag_traffic_uplink":   e.inboundTagTrafficUplink,
 		"inbound_tag_traffic_downlink": e.inboundTagTrafficDownlink,
@@ -119,12 +119,12 @@ func (e *Exporter) parseUsageStats(ch chan<- prometheus.Metric, stats []*v2Stats
 		for _, t := range stats {
 			single, err := e.parseStatsItem(t)
 			if err != nil {
-				sugar.Warnw("parse usage stats", "error", err)
+				logger.Warnln("parse usage stats", "error", err)
 				break
 			}
 			if single.Name == m {
 				ch <- prometheus.MustNewConstMetric(d, single.Type, single.Value, single.Tag)
-				sugar.Debugw("collected usage stats", "data", single)
+				logger.Debugln("collected usage stats", "data", single)
 			}
 		}
 	}
