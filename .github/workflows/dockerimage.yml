@@ -8,7 +8,7 @@ on:
       - v*
 
 env:
-  IMAGE_NAME: app
+  IMAGE_NAME: v2ray_exporter
 
 jobs:
   build:
@@ -21,13 +21,11 @@ jobs:
       - name: Log into registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+          echo "${{ secrets.PERSONAL_ACCESS_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           echo "${{ secrets.HUB_TOKEN }}" | docker login -u ${{ github.actor }} --password-stdin
 
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME
-
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag docker.pkg.github.com/abowloflrf/v2ray_exporter/app:latest
 
       - name: Push image
         run: |
@@ -54,3 +52,8 @@ jobs:
           # push to hub.docker.com
           docker tag $IMAGE_NAME abowloflrf/v2ray_exporter:$VERSION
           docker push abowloflrf/v2ray_exporter:$VERSION
+
+          # push to ghcr.io
+          docker tag $IMAGE_NAME ghcr.io/abowloflrf/v2ray_exporter:$VERSION
+          docker push ghcr.io/abowloflrf/v2ray_exporter:$VERSION
+
