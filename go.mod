@@ -9,5 +9,5 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/v2fly/v2ray-core/v4 v4.34.1-0.20210219054701-1f0d84206012
 	golang.org/x/sys v0.0.0-20210220050731-9a76102bfb43 // indirect
-	google.golang.org/grpc v1.36.0
+	google.golang.org/grpc v1.36.1
 )
