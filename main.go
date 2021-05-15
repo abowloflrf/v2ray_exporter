@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	v2c             *Client
 	v2rayAddr       string
 	listenAddr      string
 	metricsEndpoint string
@@ -20,20 +19,19 @@ var (
 )
 
 var cmd = &cobra.Command{
-	Use:   "v2ray-exporter",
-	Short: "v2ray-exporter is a exporter to collect traffic usage by each vmess user which can be collected by prometheus",
+	Use:   "v2ray_exporter",
+	Short: "v2ray_exporter is a exporter to collect traffic usage by each vmess user which can be collected by prometheus",
 	PreRun: func(cmd *cobra.Command, args []string) {
-		// init zap logger and exporter
+		// init logger and exporter
 		initLogger()
-		prometheus.MustRegister(NewExporter())
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		signals := make(chan os.Signal, 1)
-		var err error
-		v2c, err = NewClient(v2rayAddr)
+		v2c, err := NewClient(v2rayAddr)
 		if err != nil {
 			logger.Fatalf("dial V2Ray gRPC server: %v", err)
 		}
+		prometheus.MustRegister(NewExporter(v2c))
 		defer v2c.Close()
 
 		go serveHTTP(listenAddr, metricsEndpoint)

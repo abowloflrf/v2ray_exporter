@@ -13,6 +13,9 @@ const (
 )
 
 type Exporter struct {
+	// v2c V2Ray Client
+	v2c *Client
+
 	inboundTagTrafficUplink   *prometheus.Desc
 	inboundTagTrafficDownlink *prometheus.Desc
 	userTrafficUplink         *prometheus.Desc
@@ -46,7 +49,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	usageStats, err := v2c.QueryStats("")
+	usageStats, err := e.v2c.Stats("")
 	if err != nil {
 		logger.Warnln("get usage stats from v2ray", "error", err)
 	} else {
@@ -55,7 +58,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	sysStats, err := v2c.GetSysStats()
+	sysStats, err := e.v2c.SysStats()
 	if err != nil {
 		logger.Warnln("get sys sysStats from v2ray", "error", err)
 		return
@@ -131,8 +134,9 @@ func (e *Exporter) parseUsageStats(ch chan<- prometheus.Metric, stats []*v2stats
 	return nil
 }
 
-func NewExporter() *Exporter {
+func NewExporter(c *Client) *Exporter {
 	return &Exporter{
+		v2c: c,
 		inboundTagTrafficUplink: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "inbound_tag_traffic_uplink"),
 			"System inbound uplink traffic group by tag.",

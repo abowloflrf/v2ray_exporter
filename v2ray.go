@@ -9,8 +9,8 @@ import (
 )
 
 type Client struct {
-	conn   *grpc.ClientConn
-	client v2stats.StatsServiceClient
+	conn *grpc.ClientConn
+	v2stats.StatsServiceClient
 }
 
 func NewClient(addr string) (*Client, error) {
@@ -23,14 +23,14 @@ func NewClient(addr string) (*Client, error) {
 	}
 	client := v2stats.NewStatsServiceClient(conn)
 	return &Client{
-		conn:   conn,
-		client: client,
+		conn:               conn,
+		StatsServiceClient: client,
 	}, nil
 }
 
-func (c *Client) QueryStats(pt string) ([]*v2stats.Stat, error) {
+func (c *Client) Stats(pt string) ([]*v2stats.Stat, error) {
 	start := time.Now()
-	resp, err := c.client.QueryStats(context.Background(), &v2stats.QueryStatsRequest{
+	resp, err := c.QueryStats(context.Background(), &v2stats.QueryStatsRequest{
 		Pattern: "",
 		Reset_:  false,
 	})
@@ -41,7 +41,7 @@ func (c *Client) QueryStats(pt string) ([]*v2stats.Stat, error) {
 	return resp.Stat, nil
 }
 
-// GetSysStats
+// SysStats
 // NumGoroutine:17
 // NumGC:12
 // Alloc:3195136
@@ -52,9 +52,9 @@ func (c *Client) QueryStats(pt string) ([]*v2stats.Stat, error) {
 // LiveObjects:21535
 // PauseTotalNs:400819
 // Uptime:1057
-func (c *Client) GetSysStats() (*v2stats.SysStatsResponse, error) {
+func (c *Client) SysStats() (*v2stats.SysStatsResponse, error) {
 	start := time.Now()
-	resp, err := c.client.GetSysStats(context.Background(), &v2stats.SysStatsRequest{})
+	resp, err := c.GetSysStats(context.Background(), &v2stats.SysStatsRequest{})
 	if err != nil {
 		return nil, err
 	}
