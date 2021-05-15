@@ -8,7 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var (
@@ -18,33 +18,25 @@ var (
 	debugMode       bool
 )
 
-var cmd = &cobra.Command{
-	Use:   "v2ray_exporter",
-	Short: "v2ray_exporter is a exporter to collect traffic usage by each vmess user which can be collected by prometheus",
-	PreRun: func(cmd *cobra.Command, args []string) {
-		// init logger and exporter
-		initLogger()
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		signals := make(chan os.Signal, 1)
-		v2c, err := NewClient(v2rayAddr)
-		if err != nil {
-			logger.Fatalf("dial V2Ray gRPC server: %v", err)
-		}
-		prometheus.MustRegister(NewExporter(v2c))
-		defer v2c.Close()
+func main() {
+	pflag.StringVar(&v2rayAddr, "target", "127.0.0.1:10150", "v2ray grpc api endpoint")
+	pflag.StringVar(&listenAddr, "listen", "127.0.0.1:9100", "address exporter to listen")
+	pflag.StringVar(&metricsEndpoint, "endpoint", "/metrics", "enpoint for metrics")
+	pflag.BoolVar(&debugMode, "debug", false, "print debug log")
+	pflag.Parse()
+	initLogger()
 
-		go serveHTTP(listenAddr, metricsEndpoint)
-		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-		<-signals
-	},
-}
-
-func init() {
-	cmd.PersistentFlags().StringVar(&v2rayAddr, "target", "127.0.0.1:10150", "v2ray grpc api endpoint")
-	cmd.PersistentFlags().StringVar(&listenAddr, "listen", "127.0.0.1:9100", "address exporter to listen")
-	cmd.PersistentFlags().StringVar(&metricsEndpoint, "endpoint", "/metrics", "enpoint for metrics")
-	cmd.PersistentFlags().BoolVar(&debugMode, "debug", false, "print debug log")
+	signals := make(chan os.Signal, 1)
+	v2c, err := NewClient(v2rayAddr)
+	if err != nil {
+		logger.Fatalf("dial V2Ray gRPC server: %v", err)
+	}
+	prometheus.MustRegister(NewExporter(v2c))
+	defer v2c.Close()
+	go serveHTTP(listenAddr, metricsEndpoint)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	<-signals
+	logger.Warn("v2ray_exporter exit")
 }
 
 func serveHTTP(listenAddress, metricsEndpoint string) {
@@ -60,10 +52,4 @@ func serveHTTP(listenAddress, metricsEndpoint string) {
 	})
 	logger.Infoln("Starting HTTP server on ", listenAddress)
 	logger.Fatal(http.ListenAndServe(listenAddress, nil))
-}
-
-func main() {
-	if err := cmd.Execute(); err != nil {
-		logger.Fatalln("Failed to start server", err)
-	}
 }
